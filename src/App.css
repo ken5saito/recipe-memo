@@ -1,7 +1,6 @@
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
-  /* padding: 2rem; */
   background-color: #fdfdfd;
   color: #333;
   min-height: 500px;
@@ -79,6 +78,9 @@ li:hover {
   text-align: start;
   color: white;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .app-header h1 {
