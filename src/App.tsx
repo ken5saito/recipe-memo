@@ -11,6 +11,7 @@ function App() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [view, setView] = useState<"list" | "detail" | "edit">("list");
   const RECIPES_PER_PAGE = 5;
 
   const pagedRecipes = recipes.slice(
@@ -36,7 +37,13 @@ function App() {
   };
 
   const handleSelect = (id: number) => {
-    setSelectedId((prevId) => (prevId === id ? null : id));
+    setSelectedId(id);
+    setView("detail");
+  };
+
+  const handleBackToList = () => {
+    setView("list");
+    setSelectedId(null);
   };
 
   const handleDelete = (id: number) => {
@@ -80,49 +87,53 @@ function App() {
     <div>
       <Header />
       <div className="main-container">
-        {!editingId && <RecipeForm onAdd={handleAdd} />}
-        {editingRecipe && editingId && (
-          <RecipeForm
-            initialRecipe={editingRecipe}
-            onUpdate={handleUpdate}
-            onCancel={() => {
-              setEditingId(null);
-              setEditingRecipe(null);
-            }}
-          />
+        {view === "list" && (
+          <>
+            {!editingId && <RecipeForm onAdd={handleAdd} />}
+            {editingRecipe && editingId && (
+              <RecipeForm
+                initialRecipe={editingRecipe}
+                onUpdate={handleUpdate}
+                onCancel={() => {
+                  setEditingId(null);
+                  setEditingRecipe(null);
+                }}
+              />
+            )}
+            <RecipeList
+              recipes={pagedRecipes}
+              onSelect={handleSelect}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+            />
+            <div
+              style={{
+                textAlign: "center",
+                margin: "16px 0",
+                display: totalPages === 0 ? "none" : "block",
+              }}
+            >
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                前へ
+              </button>
+              <span style={{ margin: "0 12px" }}>
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                次へ
+              </button>
+            </div>
+          </>
         )}
-
-        <RecipeList
-          recipes={pagedRecipes}
-          onSelect={handleSelect}
-          onDelete={handleDelete}
-          onEdit={handleEdit}
-        />
-        <div
-          style={{
-            textAlign: "center",
-            margin: "16px 0",
-            display: totalPages === 0 ? "none" : "block",
-          }}
-        >
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(currentPage - 1)}
-          >
-            前へ
-          </button>
-          <span style={{ margin: "0 12px" }}>
-            {currentPage} / {totalPages}
-          </span>
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(currentPage + 1)}
-          >
-            次へ
-          </button>
-        </div>
-        {selectedRecipe && (
+        {view === "detail" && selectedRecipe && (
           <div className="selected-recipe">
+            <button onClick={handleBackToList}>戻る</button>
             <h2>{selectedRecipe.title}</h2>
             <strong>【材料】</strong>
             <div>{selectedRecipe.ingredients}</div>
