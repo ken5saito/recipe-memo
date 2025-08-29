@@ -26,8 +26,8 @@ https://d5wxd97ayruzz.cloudfront.net/
 ## クローン後の利用コマンド例
 
 - 依存パッケージインストール
-  - npm install
+  - `npm install`
 - 動作確認(localhost)
-  - npm run dev
+  - `npm run dev`
 - ビルド
-  - npm run build
+  - `npm run build`
