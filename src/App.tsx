@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import type { Recipe } from "./types/recipe";
 import { RecipeForm } from "./components/RecipeForm";
 import { RecipeList } from "./components/RecipeList";
-import "./App.css";
 import { Header } from "./components/Header";
+import "./styles/App.css";
 
 function App() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -106,20 +106,14 @@ function App() {
               onDelete={handleDelete}
               onEdit={handleEdit}
             />
-            <div
-              style={{
-                textAlign: "center",
-                margin: "16px 0",
-                display: totalPages === 0 ? "none" : "block",
-              }}
-            >
+            <div className={`pagination${totalPages === 0 ? " hidden" : ""}`}>
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(currentPage - 1)}
               >
                 前へ
               </button>
-              <span style={{ margin: "0 12px" }}>
+              <span className="pagination-info">
                 {currentPage} / {totalPages}
               </span>
               <button
