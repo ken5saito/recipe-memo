@@ -1,15 +1,24 @@
-import { useState, useEffect } from 'react';
-import type { Recipe } from './types/recipe';
-import { RecipeForm } from './components/RecipeForm';
-import { RecipeList } from './components/RecipeList';
-import './App.css';
-import { Header } from './components/Header';
+import { useState, useEffect } from "react";
+import type { Recipe } from "./types/recipe";
+import { RecipeForm } from "./components/RecipeForm";
+import { RecipeList } from "./components/RecipeList";
+import "./App.css";
+import { Header } from "./components/Header";
 
 function App() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const RECIPES_PER_PAGE = 5;
 
-  const LOCAL_STORAGE_KEY = 'recipeMemoAppData';
+  const pagedRecipes = recipes.slice(
+    (currentPage - 1) * RECIPES_PER_PAGE,
+    currentPage * RECIPES_PER_PAGE
+  );
+
+  const LOCAL_STORAGE_KEY = "recipeMemoAppData";
 
   useEffect(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -31,33 +40,97 @@ function App() {
   };
 
   const handleDelete = (id: number) => {
-    setRecipes((prev) => prev.filter((recipe) => recipe.id !== id));
+    setRecipes((prev) => {
+      const updated = prev.filter((recipe) => recipe.id !== id);
+      const newTotalPages = Math.max(
+        1,
+        Math.ceil(updated.length / RECIPES_PER_PAGE)
+      );
+      if (currentPage > newTotalPages) {
+        setCurrentPage(newTotalPages);
+      }
+      return updated;
+    });
     if (selectedId === id) {
       setSelectedId(null);
     }
   };
 
+  const handleEdit = (id: number) => {
+    const recipe = recipes.find((r) => r.id === id);
+    if (recipe) {
+      setEditingId(id);
+      setEditingRecipe(recipe);
+    }
+  };
 
+  const handleUpdate = (updatedRecipe: Recipe) => {
+    setRecipes(
+      recipes.map((r) => (r.id === updatedRecipe.id ? updatedRecipe : r))
+    );
+    setEditingId(null);
+    setEditingRecipe(null);
+  };
 
   const selectedRecipe = recipes.find((r) => r.id === selectedId);
+
+  const totalPages = Math.ceil(recipes.length / RECIPES_PER_PAGE);
 
   return (
     <div>
       <Header />
-      <div style={{ padding: '2em' }}>
-        <RecipeForm onAdd={handleAdd} />
-        <RecipeList recipes={recipes} onSelect={handleSelect} onDelete={handleDelete} />
+      <div className="main-container">
+        {!editingId && <RecipeForm onAdd={handleAdd} />}
+        {editingRecipe && editingId && (
+          <RecipeForm
+            initialRecipe={editingRecipe}
+            onUpdate={handleUpdate}
+            onCancel={() => {
+              setEditingId(null);
+              setEditingRecipe(null);
+            }}
+          />
+        )}
+
+        <RecipeList
+          recipes={pagedRecipes}
+          onSelect={handleSelect}
+          onDelete={handleDelete}
+          onEdit={handleEdit}
+        />
+        <div
+          style={{
+            textAlign: "center",
+            margin: "16px 0",
+            display: totalPages === 0 ? "none" : "block",
+          }}
+        >
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+          >
+            前へ
+          </button>
+          <span style={{ margin: "0 12px" }}>
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            次へ
+          </button>
+        </div>
         {selectedRecipe && (
-          <div>
+          <div className="selected-recipe">
             <h2>{selectedRecipe.title}</h2>
             <strong>【材料】</strong>
-            <div style={{ whiteSpace: 'pre-wrap', padding: '8px', marginBottom: "20px" }}>{selectedRecipe.ingredients}</div>
+            <div>{selectedRecipe.ingredients}</div>
             <strong>【手順】</strong>
-            <div style={{ whiteSpace: 'pre-wrap', padding: '8px' }}>{selectedRecipe.instructions}</div>
+            <div>{selectedRecipe.instructions}</div>
           </div>
         )}
       </div>
-
     </div>
   );
 }
